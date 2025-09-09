@@ -26,7 +26,7 @@ import random
 #     }
 # }
 
-from eval_funcs import evaluate_hand
+from src.eval_funcs import evaluate_hand
 
 class Deck:
     def __init__(self, cards):
