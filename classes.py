@@ -100,9 +100,9 @@ class Game:
             if player.known_cards is None:
                 player.draw_card()
                 player.draw_card()
-                if self.omaha:
-                    player.draw_card()
-                    player.draw_card()
+                # if self.omaha:
+                #     player.draw_card()
+                #     player.draw_card()
             else:
                 for card in player.known_cards:
                     #print(card)
