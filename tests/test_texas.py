@@ -1,6 +1,9 @@
 import pytest
+import random
 from src.classes import Game, Card, Player, Deck
 from copy import deepcopy
+
+random.seed(44)  # For reproducibility in tests
 
 @pytest.fixture
 def base_state():
@@ -20,7 +23,8 @@ def base_state():
             "flop": None,
             "turn": None,
             "river": None
-        }
+        },
+        "game_type": "texas"  # or "omaha"
     }
 
 @pytest.fixture

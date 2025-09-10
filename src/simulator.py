@@ -2,35 +2,65 @@ import streamlit as st
 from classes import Card, Deck, Player, Game, Table
 
 
-st.title("Texas Hold 'Em Simulator")
+st.title("Poker Equity Calculator")
+st.write("Simulate poker hands and calculate win probabilities.")
+use_omaha = st.checkbox("Omaha?", value=False)
 
 if 'state_dict' not in st.session_state:
     st.session_state.state_dict = None
 
-custom_state_dict = {
-    "players": [
-        {
-            "name": "Sam",
-            "hand": [(14, 'Spades'), (13, 'Hearts') ]
+if use_omaha:
+    custom_state_dict = {
+        "players": [
+            {
+                "name": "Sam",
+                "hand": [(14, 'Spades'), (13, 'Hearts'), (3, 'Clubs'), (2, 'Diamonds') ]
+            },
+            {
+                "name": "Arch",
+                "hand": None
+            },
+            # {
+            #     "name": "Bob",
+            #     "hand": None
+            # }
+        ],
+        "table": { #these cannot repeat cards on the table
+            #"flop": [(4, 'Spades'), (14, 'Clubs'), (12, 'Hearts')],
+            "flop": None,
+            #"turn": [(9, 'Diamonds')], 
+            "turn": None,
+            #"river": (12, 'Clubs')
+            "river": None
         },
-        {
-            "name": "Arch",
-            "hand": None
-        },
-        # {
-        #     "name": "Bob",
-        #     "hand": None
-        # }
-    ],
-    "table": { #these cannot repeat cards on the table
-        #"flop": [(4, 'Spades'), (14, 'Clubs'), (12, 'Hearts')],
-        "flop": None,
-        #"turn": [(9, 'Diamonds')], 
-        "turn": None,
-        #"river": (12, 'Clubs')
-        "river": None
+        "game_type": "omaha"  # or "omaha"
     }
-}
+else:
+    custom_state_dict = {
+        "players": [
+            {
+                "name": "Sam",
+                "hand": [(14, 'Spades'), (13, 'Hearts') ]
+            },
+            {
+                "name": "Arch",
+                "hand": None
+            },
+            # {
+            #     "name": "Bob",
+            #     "hand": None
+            # }
+        ],
+        "table": { #these cannot repeat cards on the table
+            #"flop": [(4, 'Spades'), (14, 'Clubs'), (12, 'Hearts')],
+            "flop": None,
+            #"turn": [(9, 'Diamonds')], 
+            "turn": None,
+            #"river": (12, 'Clubs')
+            "river": None
+        },
+        "game_type": "texas"  # or "omaha"
+    }
 outcomes = {
     'Sam': 0,
     'Arch': 0,
@@ -45,7 +75,17 @@ card2 = st.selectbox("Sam Card 2",
                      options=[(rank, suit) for rank in range(2, 15) for suit in ['Hearts', 'Diamonds', 'Clubs', 'Spades']],
                      index=1)  # Default to King of Spades
 
-custom_state_dict['players'][0]['hand'] = [card1, card2]
+if use_omaha:
+    cardo3 = st.selectbox("Sam Card 3", 
+                         options=[(rank, suit) for rank in range(2, 15) for suit in ['Hearts', 'Diamonds', 'Clubs', 'Spades']],
+                         index=2)  # Default to Ace of Spades
+    cardo4 = st.selectbox("Sam Card 4", 
+                         options=[(rank, suit) for rank in range(2, 15) for suit in ['Hearts', 'Diamonds', 'Clubs', 'Spades']],
+                         index=3)  # Default to King of Spades
+    custom_state_dict['players'][0]['hand'] = [card1, card2, cardo3, cardo4]
+
+else:
+    custom_state_dict['players'][0]['hand'] = [card1, card2]
 
 if st.checkbox("Add Flop Cards?"):
     card3 = st.selectbox("Flop 1", 
@@ -71,13 +111,12 @@ if st.checkbox("Add River Card?"):
 
 
 #FIXME: add validation to ensure no duplicate cards
-
 st.session_state.state_dict = custom_state_dict
 
 
 sims = 10_000
 for _ in range(sims):
-    game = Game(num_players=3, state_dict=st.session_state.state_dict, verbose=False)
+    game = Game(num_players=2, state_dict=st.session_state.state_dict, verbose=False)
     game.start()
     game.flop()
     game.turn()

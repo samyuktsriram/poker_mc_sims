@@ -1,7 +1,5 @@
-#card 
-#hand
-#deck
 import random
+from itertools import combinations
 #random.seed(3)
 
 
@@ -24,6 +22,7 @@ import random
 #     #     "turn": (3, 'Spades'), 
 #     #     "river": (4, 'Hearts')
 #     }
+#     "game_type": "texas"  # or "omaha"
 # }
 
 from src.eval_funcs import evaluate_hand
@@ -74,10 +73,10 @@ class Player:
     
 #pass some kind of state dict here - that can be checked at each round.
 class Game:
-    def __init__(self, num_players, state_dict=None, verbose=True, omaha=False):
+    def __init__(self, num_players, state_dict=None, verbose=True):
         self.verbose = verbose
         self.state_dict = state_dict
-        #self.omaha = omaha
+        self.omaha = state_dict['game_type'] == 'omaha'
         
         ranks = list(range(2, 15))  # 2-14 where 11-14 are J, Q, K, A
         #suits = [1,2,3,4]
@@ -100,9 +99,9 @@ class Game:
             if player.known_cards is None:
                 player.draw_card()
                 player.draw_card()
-                # if self.omaha:
-                #     player.draw_card()
-                #     player.draw_card()
+                if self.omaha:
+                    player.draw_card()
+                    player.draw_card()
             else:
                 for card in player.known_cards:
                     #print(card)
@@ -205,12 +204,30 @@ class Game:
         if self.verbose:
             print(len(self.burnt_cards), "burnt cards:", self.burnt_cards)
         
-        # Evaluate all hands
-        for player in self.players:
-            player.evaluation = evaluate_hand(player, self.open_cards)
-            if self.verbose:
-                print(f"{player.name} has evaluation {player.evaluation.eval} "
-                    f"with cards {player.evaluation.primary_cards}")
+        #Evaluate all hands
+        if self.omaha:
+            #need 2 cards from hand, 3 from board. need to evaluate all combinations
+            for player in self.players:
+                best_evaluation = None
+                hand_combos = list(combinations(player.cards, 2))
+                board_combos = list(combinations(self.open_cards, 3))
+                for hand_pair in hand_combos:
+                    for board_triplet in board_combos:
+                        combined_cards = list(hand_pair) + list(board_triplet)
+                        current_evaluation = evaluate_hand(player, combined_cards)
+                        if not best_evaluation or best_evaluation < current_evaluation:
+                            best_evaluation = current_evaluation
+                player.evaluation = best_evaluation
+                if self.verbose:
+                    print(f"{player.name} has evaluation {player.evaluation.eval} "
+                        f"with cards {player.evaluation.primary_cards}")
+
+        else:
+            for player in self.players:
+                player.evaluation = evaluate_hand(player, self.open_cards)
+                if self.verbose:
+                    print(f"{player.name} has evaluation {player.evaluation.eval} "
+                        f"with cards {player.evaluation.primary_cards}")
 
         # Find highest hand rank
         max_eval = max(player.evaluation.eval for player in self.players)

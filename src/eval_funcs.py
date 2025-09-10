@@ -2,7 +2,6 @@
 #returns the rank of the hand
 #from classes import Card, Deck, Player, Game, Table
 
-#have to figure out tiebreaks #FIXME 
 class Evaluation:
     def __init__(self, eval, primary_cards, kickers=None):
         self.eval = eval  # Hand rank (9=straight flush, 8=four of a kind, etc.)
