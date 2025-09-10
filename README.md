@@ -1,7 +1,9 @@
-Poker Monte Carlo Simulations
+## Poker Monte Carlo Simulations
 A basic Python implementation for simulating and analyzing poker games, with support for both Texas Hold'em and Omaha variants.
 
-Using Stremalit to easily input and compute probabilities interactively.
+
+Using Streamlit to easily input and compute probabilities interactively.
+
 
 Features
 Texas Hold'em and Omaha poker variants
