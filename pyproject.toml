@@ -21,6 +21,7 @@ packages = [
 [tool.poetry.dependencies]
 python = ">=3.11"
 streamlit = "1.49.1"
+black = "^25.1.0"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.4.2"

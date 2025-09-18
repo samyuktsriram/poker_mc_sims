@@ -1,6 +1,7 @@
 import random
 from itertools import combinations
-#random.seed(3)
+
+# random.seed(3)
 
 
 # #state_dict_schema
@@ -19,13 +20,14 @@ from itertools import combinations
 #     "table": {
 #     #     "flop": [(10, 'Hearts'), (11, 'Hearts'), (12, 'Hearts')],
 #             "flop": None,
-#     #     "turn": (3, 'Spades'), 
+#     #     "turn": (3, 'Spades'),
 #     #     "river": (4, 'Hearts')
 #     }
 #     "game_type": "texas"  # or "omaha"
 # }
 
 from src.eval_funcs import evaluate_hand
+
 
 class Deck:
     def __init__(self, cards):
@@ -38,16 +40,20 @@ class Deck:
         if len(self.cards) == 0:
             return None
         return self.cards.pop()
+
     def find_and_pop_card(self, rank, suit):
         found_card = None
         for card in self.cards:
             if card.rank == rank and card.suit == suit:
                 found_card = self.cards.pop(self.cards.index(card))
                 return found_card
-        
+
         if found_card is None:
-            raise ValueError(f"Card {rank} of {suit} not found in deck. You must have popped it already!")
-    
+            raise ValueError(
+                f"Card {rank} of {suit} not found in deck. You must have popped it already!"
+            )
+
+
 class Card:
     def __init__(self, rank, suit):
         self.rank = rank
@@ -55,7 +61,8 @@ class Card:
 
     def __repr__(self):
         return f"{self.rank} of {self.suit}"
-    
+
+
 class Player:
     def __init__(self, deck, name=None, known_cards=None):
         self.cards = []
@@ -63,7 +70,7 @@ class Player:
         if name:
             self.name = name
         else:
-            self.name = f"Player{random.randint(1,1000)}" #fix this
+            self.name = f"Player{random.randint(1,1000)}"  # fix this
         self.known_cards = known_cards
 
     def draw_card(self):
@@ -74,23 +81,26 @@ class Player:
 
     def show_hand(self):
         return self.cards
-    
-#pass some kind of state dict here - that can be checked at each round.
+
+
+# pass some kind of state dict here - that can be checked at each round.
 class Game:
     def __init__(self, num_players, state_dict=None, verbose=True):
         self.verbose = verbose
         self.state_dict = state_dict
-        self.omaha = state_dict['game_type'] == 'omaha'
-        
+        self.omaha = state_dict["game_type"] == "omaha"
+
         ranks = list(range(2, 15))  # 2-14 where 11-14 are J, Q, K, A
-        #suits = [1,2,3,4]
-        suits = ['Hearts', 'Diamonds', 'Clubs', 'Spades']
+        # suits = [1,2,3,4]
+        suits = ["Hearts", "Diamonds", "Clubs", "Spades"]
         cards = [Card(rank, suit) for rank in ranks for suit in suits]
         self.deck = Deck(cards)
 
+        self.players = [
+            Player(self.deck, player["name"], player["hand"])
+            for player in state_dict["players"]
+        ]
 
-        self.players = [Player(self.deck, player['name'], player['hand']) for player in state_dict['players']]
-        
         self.table = Table(self.deck)
 
         self.open_cards = []
@@ -99,7 +109,7 @@ class Game:
 
     def start(self):
         for player in self.players:
-        #for player in state_dict['players']:
+            # for player in state_dict['players']:
             if player.known_cards is None:
                 player.draw_card()
                 player.draw_card()
@@ -108,16 +118,18 @@ class Game:
                     player.draw_card()
             else:
                 for card in player.known_cards:
-                    #print(card)
-                    setup_card = self.deck.find_and_pop_card(card[0], card[1]) #rank and suit
+                    # print(card)
+                    setup_card = self.deck.find_and_pop_card(
+                        card[0], card[1]
+                    )  # rank and suit
                     if setup_card:
                         player.cards.append(setup_card)
 
             if self.verbose:
                 print("Player:", player.name, player.show_hand())
-    
+
     def flop(self):
-        known_flop = self.state_dict['table']['flop']
+        known_flop = self.state_dict["table"]["flop"]
 
         if known_flop is None:
             burn_card = self.deck.draw()  # Burn a card
@@ -127,25 +139,40 @@ class Game:
         else:
             for card in known_flop:
                 setup_card = None
-                #interesting edge case to deal with: if we know the flop, we may have to remove those cards from the other players and give them new ones.
+                # interesting edge case to deal with: if we know the flop, we may have to remove those cards from the other players and give them new ones.
                 for player in self.players:
-                        card_to_remove = next((c for c in player.cards if c.rank == card[0] and c.suit == card[1]), None)
-                        if card_to_remove is None:
-                            #setup_card = self.deck.find_and_pop_card(card[0], card[1])
-                            continue
-                        else:
-                            if self.verbose:
-                                print(f"Removing {card_to_remove} from {player.name}'s hand to set up the flop.")
-                            player.remove_card(card_to_remove) #take out this card from the player's hands
-                            player.draw_card() #give them a new card from the deck
-                            setup_card = Card(card[0], card[1]) #create this setup_card, to be added to table
-                
+                    card_to_remove = next(
+                        (
+                            c
+                            for c in player.cards
+                            if c.rank == card[0] and c.suit == card[1]
+                        ),
+                        None,
+                    )
+                    if card_to_remove is None:
+                        # setup_card = self.deck.find_and_pop_card(card[0], card[1])
+                        continue
+                    else:
+                        if self.verbose:
+                            print(
+                                f"Removing {card_to_remove} from {player.name}'s hand to set up the flop."
+                            )
+                        player.remove_card(
+                            card_to_remove
+                        )  # take out this card from the player's hands
+                        player.draw_card()  # give them a new card from the deck
+                        setup_card = Card(
+                            card[0], card[1]
+                        )  # create this setup_card, to be added to table
+
                 if setup_card is None:
-                    self.table.cards.append(self.deck.find_and_pop_card(card[0], card[1]))
-                else:  
+                    self.table.cards.append(
+                        self.deck.find_and_pop_card(card[0], card[1])
+                    )
+                else:
                     self.table.cards.append(setup_card)
 
-            #burn at the end because we know the flop
+            # burn at the end because we know the flop
             burn_card = self.deck.draw()
             self.burnt_cards.append(burn_card)
 
@@ -154,7 +181,7 @@ class Game:
         self.open_cards = self.table.show_table()
 
     def turn(self):
-        known_turn = self.state_dict['table']['turn']
+        known_turn = self.state_dict["table"]["turn"]
         if known_turn is None:
             burn_card = self.deck.draw()
             self.burnt_cards.append(burn_card)
@@ -162,38 +189,61 @@ class Game:
         else:
             for card in known_turn:
                 setup_card = None
-                #interesting edge case to deal with: if we know the turn, we may have to remove those cards from the other players and give them new ones. They may also be in the burnt cards! FIXME
+                # interesting edge case to deal with: if we know the turn, we may have to remove those cards from the other players and give them new ones. They may also be in the burnt cards! FIXME
                 for player in self.players:
-                        card_to_remove = next((c for c in player.cards if c.rank == card[0] and c.suit == card[1]), None)
-                        if card_to_remove is None:
-                            #setup_card = self.deck.find_and_pop_card(card[0], card[1])
-                            continue
-                        else:
-                            if self.verbose:
-                                print(f"Removing {card_to_remove} from {player.name}'s hand to set up the flop.")
-                            player.remove_card(card_to_remove) #take out this card from the player's hands
-                            player.draw_card() #give them a new card from the deck
-                            setup_card = Card(card[0], card[1]) #create this setup_card, to be added to table
-                
+                    card_to_remove = next(
+                        (
+                            c
+                            for c in player.cards
+                            if c.rank == card[0] and c.suit == card[1]
+                        ),
+                        None,
+                    )
+                    if card_to_remove is None:
+                        # setup_card = self.deck.find_and_pop_card(card[0], card[1])
+                        continue
+                    else:
+                        if self.verbose:
+                            print(
+                                f"Removing {card_to_remove} from {player.name}'s hand to set up the flop."
+                            )
+                        player.remove_card(
+                            card_to_remove
+                        )  # take out this card from the player's hands
+                        player.draw_card()  # give them a new card from the deck
+                        setup_card = Card(
+                            card[0], card[1]
+                        )  # create this setup_card, to be added to table
 
-                burnt_card_to_replace = next((c for c in self.burnt_cards if c.rank == card[0] and c.suit == card[1]), None)
+                burnt_card_to_replace = next(
+                    (
+                        c
+                        for c in self.burnt_cards
+                        if c.rank == card[0] and c.suit == card[1]
+                    ),
+                    None,
+                )
                 if burnt_card_to_replace:
                     if self.verbose:
-                        print(f"Removing {burnt_card_to_replace} from burnt cards to set up the turn.")
+                        print(
+                            f"Removing {burnt_card_to_replace} from burnt cards to set up the turn."
+                        )
                     self.burnt_cards.remove(burnt_card_to_replace)
                     setup_card = Card(card[0], card[1])
-                    #self.burnt_cards.append(self.deck.draw()) #replace the burnt card with a new one from the deck
+                    # self.burnt_cards.append(self.deck.draw()) #replace the burnt card with a new one from the deck
 
-                if setup_card is None: #not in player's hands, not in burnt cards
-                    self.table.cards.append(self.deck.find_and_pop_card(card[0], card[1]))
-                else:  
+                if setup_card is None:  # not in player's hands, not in burnt cards
+                    self.table.cards.append(
+                        self.deck.find_and_pop_card(card[0], card[1])
+                    )
+                else:
                     self.table.cards.append(setup_card)
-                
+
                 burn_card = self.deck.draw()
                 self.burnt_cards.append(burn_card)
         if self.verbose:
             print("Turn:", self.table.show_table())
-    
+
         self.open_cards = self.table.show_table()
 
     def river(self):
@@ -203,14 +253,14 @@ class Game:
         if self.verbose:
             print("River:", self.table.show_table())
         self.open_cards = self.table.show_table()
-    
+
     def compute_winner(self):
         if self.verbose:
             print(len(self.burnt_cards), "burnt cards:", self.burnt_cards)
-        
-        #Evaluate all hands
+
+        # Evaluate all hands
         if self.omaha:
-            #need 2 cards from hand, 3 from board. need to evaluate all combinations
+            # need 2 cards from hand, 3 from board. need to evaluate all combinations
             for player in self.players:
                 best_evaluation = None
                 hand_combos = list(combinations(player.cards, 2))
@@ -223,31 +273,37 @@ class Game:
                             best_evaluation = current_evaluation
                 player.evaluation = best_evaluation
                 if self.verbose:
-                    print(f"{player.name} has evaluation {player.evaluation.eval} "
-                        f"with cards {player.evaluation.primary_cards}")
+                    print(
+                        f"{player.name} has evaluation {player.evaluation.eval} "
+                        f"with cards {player.evaluation.primary_cards}"
+                    )
 
         else:
             for player in self.players:
                 player.evaluation = evaluate_hand(player, self.open_cards)
                 if self.verbose:
-                    print(f"{player.name} has evaluation {player.evaluation.eval} "
-                        f"with cards {player.evaluation.primary_cards}")
+                    print(
+                        f"{player.name} has evaluation {player.evaluation.eval} "
+                        f"with cards {player.evaluation.primary_cards}"
+                    )
 
         # Find highest hand rank
         max_eval = max(player.evaluation.eval for player in self.players)
         potential_winners = [p for p in self.players if p.evaluation.eval == max_eval]
-        
+
         if len(potential_winners) == 1:
             winner = potential_winners[0]
             if self.verbose:
-                print(f"The winner is {winner.name} with {(winner.evaluation.eval)} "
-                    f"({winner.evaluation.primary_cards})")
+                print(
+                    f"The winner is {winner.name} with {(winner.evaluation.eval)} "
+                    f"({winner.evaluation.primary_cards})"
+                )
             return winner.name
-            
+
         # Compare primary cards and kickers
         best_hand = None
         winners = []
-        
+
         for player in potential_winners:
             if not best_hand:
                 best_hand = player.evaluation
@@ -259,18 +315,22 @@ class Game:
                 winners = [player]
             else:
                 winners.append(player)
-        
+
         if len(winners) == 1:
             if self.verbose:
-                print(f"The winner is {winners[0].name} with {(winners[0].evaluation.eval)} "
-                    f"({winners[0].evaluation.primary_cards})")
+                print(
+                    f"The winner is {winners[0].name} with {(winners[0].evaluation.eval)} "
+                    f"({winners[0].evaluation.primary_cards})"
+                )
             return winners[0].name
         else:
-            names = ', '.join(w.name for w in winners)
+            names = ", ".join(w.name for w in winners)
             if self.verbose:
-                print(f"It's a tie between: {names} with {(winners[0].evaluation.eval)} "
-                    f"({winners[0].evaluation.primary_cards})")
-            return 'Tie'
+                print(
+                    f"It's a tie between: {names} with {(winners[0].evaluation.eval)} "
+                    f"({winners[0].evaluation.primary_cards})"
+                )
+            return "Tie"
 
     # def compute_winner(self):
     #     if self.verbose:
@@ -313,13 +373,14 @@ class Table:
     def show_table(self):
         return self.cards
 
+
 ##Tests
 
 
-#setup:
+# setup:
 ranks = list(range(2, 15))  # 2-14 where 11-14 are J, Q, K, A
-#suits = [1,2,3,4]
-suits = ['Hearts', 'Diamonds', 'Clubs', 'Spades']
+# suits = [1,2,3,4]
+suits = ["Hearts", "Diamonds", "Clubs", "Spades"]
 cards = [Card(rank, suit) for rank in ranks for suit in suits]
 
 # deck = Deck(cards)

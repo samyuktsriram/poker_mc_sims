@@ -9,88 +9,140 @@ use_omaha = st.checkbox("Omaha?", value=False)
 num_players = st.slider("Number of Players", min_value=2, max_value=6, value=2, step=1)
 
 
-if 'state_dict' not in st.session_state:
+if "state_dict" not in st.session_state:
     st.session_state.state_dict = None
 
-init_players = [
-    {"name": f"Player{i+1}", "hand": None} for i in range(num_players)
-]
+init_players = [{"name": f"Player{i+1}", "hand": None} for i in range(num_players)]
 
 outcomes = {f"Player{i+1}": 0 for i in range(num_players)}
-outcomes['Tie'] = 0  # Add tie possibility
+outcomes["Tie"] = 0  # Add tie possibility
 
 
 if use_omaha:
     custom_state_dict = {
         "players": init_players,
-        "table": { #these cannot repeat cards on the table
-            #"flop": [(4, 'Spades'), (14, 'Clubs'), (12, 'Hearts')],
+        "table": {  # these cannot repeat cards on the table
+            # "flop": [(4, 'Spades'), (14, 'Clubs'), (12, 'Hearts')],
             "flop": None,
-            #"turn": [(9, 'Diamonds')], 
+            # "turn": [(9, 'Diamonds')],
             "turn": None,
-            #"river": (12, 'Clubs')
-            "river": None
+            # "river": (12, 'Clubs')
+            "river": None,
         },
-        "game_type": "omaha"  # or "omaha"
+        "game_type": "omaha",  # or "omaha"
     }
 else:
     custom_state_dict = {
         "players": init_players,
-        "table": { #these cannot repeat cards on the table
-            #"flop": [(4, 'Spades'), (14, 'Clubs'), (12, 'Hearts')],
+        "table": {  # these cannot repeat cards on the table
+            # "flop": [(4, 'Spades'), (14, 'Clubs'), (12, 'Hearts')],
             "flop": None,
-            #"turn": [(9, 'Diamonds')], 
+            # "turn": [(9, 'Diamonds')],
             "turn": None,
-            #"river": (12, 'Clubs')
-            "river": None
+            # "river": (12, 'Clubs')
+            "river": None,
         },
-        "game_type": "texas"  # or "omaha"
+        "game_type": "texas",  # or "omaha"
     }
 
 
-card1 = st.selectbox("Player1 Card 1", 
-                     options=[(rank, suit) for rank in range(2, 15) for suit in ['Hearts', 'Diamonds', 'Clubs', 'Spades']],
-                     index=0)  # Default to Ace of Spades
-card2 = st.selectbox("Player1 Card 2", 
-                     options=[(rank, suit) for rank in range(2, 15) for suit in ['Hearts', 'Diamonds', 'Clubs', 'Spades']],
-                     index=1)  # Default to King of Spades
+card1 = st.selectbox(
+    "Player1 Card 1",
+    options=[
+        (rank, suit)
+        for rank in range(2, 15)
+        for suit in ["Hearts", "Diamonds", "Clubs", "Spades"]
+    ],
+    index=0,
+)  # Default to Ace of Spades
+card2 = st.selectbox(
+    "Player1 Card 2",
+    options=[
+        (rank, suit)
+        for rank in range(2, 15)
+        for suit in ["Hearts", "Diamonds", "Clubs", "Spades"]
+    ],
+    index=1,
+)  # Default to King of Spades
 
 if use_omaha:
-    cardo3 = st.selectbox("Player1 Card 3", 
-                         options=[(rank, suit) for rank in range(2, 15) for suit in ['Hearts', 'Diamonds', 'Clubs', 'Spades']],
-                         index=2)  # Default to Ace of Spades
-    cardo4 = st.selectbox("Player1 Card 4", 
-                         options=[(rank, suit) for rank in range(2, 15) for suit in ['Hearts', 'Diamonds', 'Clubs', 'Spades']],
-                         index=3)  # Default to King of Spades
-    custom_state_dict['players'][0]['hand'] = [card1, card2, cardo3, cardo4]
+    cardo3 = st.selectbox(
+        "Player1 Card 3",
+        options=[
+            (rank, suit)
+            for rank in range(2, 15)
+            for suit in ["Hearts", "Diamonds", "Clubs", "Spades"]
+        ],
+        index=2,
+    )  # Default to Ace of Spades
+    cardo4 = st.selectbox(
+        "Player1 Card 4",
+        options=[
+            (rank, suit)
+            for rank in range(2, 15)
+            for suit in ["Hearts", "Diamonds", "Clubs", "Spades"]
+        ],
+        index=3,
+    )  # Default to King of Spades
+    custom_state_dict["players"][0]["hand"] = [card1, card2, cardo3, cardo4]
 
 else:
-    custom_state_dict['players'][0]['hand'] = [card1, card2]
+    custom_state_dict["players"][0]["hand"] = [card1, card2]
 
 if st.checkbox("Add Flop Cards?"):
-    card3 = st.selectbox("Flop 1", 
-                        options=[(rank, suit) for rank in range(2, 15) for suit in ['Hearts', 'Diamonds', 'Clubs', 'Spades']],
-                        index=2)  # Default to Ace of Spades
-    card4 = st.selectbox("Flop 2", 
-                        options=[(rank, suit) for rank in range(2, 15) for suit in ['Hearts', 'Diamonds', 'Clubs', 'Spades']],
-                        index=3)  # Default to King of Spades
-    card5 = st.selectbox("Flop 3", 
-                        options=[(rank, suit) for rank in range(2, 15) for suit in ['Hearts', 'Diamonds', 'Clubs', 'Spades']],
-                        index=4)  # Default to Queen of Spades
-    custom_state_dict['table']['flop'] = [card3, card4, card5]
+    card3 = st.selectbox(
+        "Flop 1",
+        options=[
+            (rank, suit)
+            for rank in range(2, 15)
+            for suit in ["Hearts", "Diamonds", "Clubs", "Spades"]
+        ],
+        index=2,
+    )  # Default to Ace of Spades
+    card4 = st.selectbox(
+        "Flop 2",
+        options=[
+            (rank, suit)
+            for rank in range(2, 15)
+            for suit in ["Hearts", "Diamonds", "Clubs", "Spades"]
+        ],
+        index=3,
+    )  # Default to King of Spades
+    card5 = st.selectbox(
+        "Flop 3",
+        options=[
+            (rank, suit)
+            for rank in range(2, 15)
+            for suit in ["Hearts", "Diamonds", "Clubs", "Spades"]
+        ],
+        index=4,
+    )  # Default to Queen of Spades
+    custom_state_dict["table"]["flop"] = [card3, card4, card5]
 if st.checkbox("Add Turn Card?"):
-    card6 = st.selectbox("Turn", 
-                         options=[(rank, suit) for rank in range(2, 15) for suit in ['Hearts', 'Diamonds', 'Clubs', 'Spades']],
-                         index=5)  # Default to Jack of Spades
-    custom_state_dict['table']['turn'] = [card6]
+    card6 = st.selectbox(
+        "Turn",
+        options=[
+            (rank, suit)
+            for rank in range(2, 15)
+            for suit in ["Hearts", "Diamonds", "Clubs", "Spades"]
+        ],
+        index=5,
+    )  # Default to Jack of Spades
+    custom_state_dict["table"]["turn"] = [card6]
 if st.checkbox("Add River Card?"):
-    card7 = st.selectbox("River", 
-                         options=[(rank, suit) for rank in range(2, 15) for suit in ['Hearts', 'Diamonds', 'Clubs', 'Spades']],
-                         index=6)  # Default to 10 of Spades
-    custom_state_dict['table']['river'] = [card7]
+    card7 = st.selectbox(
+        "River",
+        options=[
+            (rank, suit)
+            for rank in range(2, 15)
+            for suit in ["Hearts", "Diamonds", "Clubs", "Spades"]
+        ],
+        index=6,
+    )  # Default to 10 of Spades
+    custom_state_dict["table"]["river"] = [card7]
 
 
-#FIXME: add validation to ensure no duplicate cards
+# FIXME: add validation to ensure no duplicate cards
 st.session_state.state_dict = custom_state_dict
 
 
@@ -102,7 +154,7 @@ for _ in range(sims):
     game.turn()
     game.river()
     winner = game.compute_winner()
-    #print(f"Winner: {winner}")
+    # print(f"Winner: {winner}")
     outcomes[winner] += 1
 
 # print(f"Final outcomes after {sims} games:")

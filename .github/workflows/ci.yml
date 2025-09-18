@@ -29,3 +29,6 @@ jobs:
 
       - name: Run tests
         run: poetry run pytest
+      
+      - name: Run Black check
+        run: poetry run black --check src src tests

@@ -1,35 +1,43 @@
-#takes in a hand, and the open cards on the table
-#returns the rank of the hand
-#from classes import Card, Deck, Player, Game, Table
+# takes in a hand, and the open cards on the table
+# returns the rank of the hand
+# from classes import Card, Deck, Player, Game, Table
+
 
 class Evaluation:
     def __init__(self, eval, primary_cards, kickers=None):
         self.eval = eval  # Hand rank (9=straight flush, 8=four of a kind, etc.)
-        self.primary_cards = sorted(primary_cards, reverse=True)  # Main cards that make the hand
-        self.kickers = sorted(kickers, reverse=True) if kickers else []  # Remaining cards for tiebreaks
-    
+        self.primary_cards = sorted(
+            primary_cards, reverse=True
+        )  # Main cards that make the hand
+        self.kickers = (
+            sorted(kickers, reverse=True) if kickers else []
+        )  # Remaining cards for tiebreaks
+
     def __lt__(self, other):
         if self.eval != other.eval:
             return self.eval < other.eval
-            
+
         # Compare primary cards
         for self_card, other_card in zip(self.primary_cards, other.primary_cards):
             if self_card != other_card:
                 return self_card < other_card
-                
+
         # Compare kickers
         for self_kick, other_kick in zip(self.kickers, other.kickers):
             if self_kick != other_kick:
                 return self_kick < other_kick
-                
+
         return False  # Completely equal hands
 
     def __eq__(self, other):
         if not isinstance(other, Evaluation):
             return NotImplemented
-        return (self.eval == other.eval and 
-                self.primary_cards == other.primary_cards and 
-                self.kickers == other.kickers)
+        return (
+            self.eval == other.eval
+            and self.primary_cards == other.primary_cards
+            and self.kickers == other.kickers
+        )
+
 
 def evaluate_hand(player, open_cards):
     all_cards = player.show_hand() + open_cards
@@ -48,8 +56,9 @@ def evaluate_hand(player, open_cards):
 
     # Check for straight flush first
     if is_flush:
-        flush_cards = sorted([card.rank for card in all_cards 
-                            if card.suit == flush_suit], reverse=True)
+        flush_cards = sorted(
+            [card.rank for card in all_cards if card.suit == flush_suit], reverse=True
+        )
         straight_flush_high = check_straight(flush_cards)
         if straight_flush_high:
             return Evaluation(9, [straight_flush_high])  # Straight Flush
@@ -68,8 +77,9 @@ def evaluate_hand(player, open_cards):
 
     # Check for flush
     if is_flush:
-        flush_cards = sorted([card.rank for card in all_cards 
-                            if card.suit == flush_suit], reverse=True)[:5]
+        flush_cards = sorted(
+            [card.rank for card in all_cards if card.suit == flush_suit], reverse=True
+        )[:5]
         return Evaluation(6, flush_cards)
 
     # Check for straight
@@ -100,20 +110,21 @@ def evaluate_hand(player, open_cards):
     # High card
     return Evaluation(1, [], sorted_ranks[:5])
 
+
 def check_straight(ranks):
     """Helper function to check for straights."""
     # Remove duplicates and sort
     unique_ranks = sorted(set(ranks), reverse=True)
-    
+
     # Regular straight check
     for i in range(len(unique_ranks) - 4):
         if unique_ranks[i] - unique_ranks[i + 4] == 4:
             return unique_ranks[i]
-    
+
     # Ace-low straight check (A,2,3,4,5)
-    if 14 in unique_ranks and {2,3,4,5}.issubset(set(unique_ranks)):
+    if 14 in unique_ranks and {2, 3, 4, 5}.issubset(set(unique_ranks)):
         return 5
-    
+
     return None
 
 
