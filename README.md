@@ -1,13 +1,16 @@
 ## Poker Monte Carlo Simulations
 A basic Python implementation for simulating and analyzing poker games, with support for both Texas Hold'em and Omaha variants.
 
-
 Using Streamlit to easily input and compute probabilities interactively.
 
 
 Features
 Texas Hold'em and Omaha poker variants
 Monte Carlo simulations for equity analysis at each stage.
+Supports up to 6 players (for now)
+
+
+### Installation
 
 ```
 # Install with Poetry
@@ -19,4 +22,16 @@ poetry install
 ```
 # Run with Streamlit
 poetry run streamlit run src/simulator.py
+```
+
+
+### Tests
+
+```
+poetry run pytest
+```
+
+### Code formatting - Black
+```
+poetry run black src tests --check
 ```
