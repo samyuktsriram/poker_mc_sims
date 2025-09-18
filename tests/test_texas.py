@@ -39,6 +39,18 @@ def test_game_initialization(game):
     game.start()
     assert len(game.deck.cards) == 52 - 4  # 52 - 4 dealt cards
 
+def test_twice_pop_card():
+    """Test that popping the same card twice raises an error"""
+    ranks = list(range(2, 15))  # 2-14 where 11-14 are J, Q, K, A
+    #suits = [1,2,3,4]
+    suits = ['Hearts', 'Diamonds', 'Clubs', 'Spades']
+    cards = [Card(rank, suit) for rank in ranks for suit in suits]
+    deck = Deck(cards)
+    card = deck.find_and_pop_card(14, 'Hearts')  # A♥
+    assert card.rank == 14 and card.suit == 'Hearts'
+    with pytest.raises(ValueError):
+        deck.find_and_pop_card(14, 'Hearts')  # Should raise error
+
 def test_known_hands(game):
     """Test that known hands are dealt correctly"""
     game.start()

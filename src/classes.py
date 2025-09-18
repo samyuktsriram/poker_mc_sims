@@ -39,10 +39,14 @@ class Deck:
             return None
         return self.cards.pop()
     def find_and_pop_card(self, rank, suit):
+        found_card = None
         for card in self.cards:
             if card.rank == rank and card.suit == suit:
-                return self.cards.pop(self.cards.index(card))
-        return None
+                found_card = self.cards.pop(self.cards.index(card))
+                return found_card
+        
+        if found_card is None:
+            raise ValueError(f"Card {rank} of {suit} not found in deck. You must have popped it already!")
     
 class Card:
     def __init__(self, rank, suit):
