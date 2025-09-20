@@ -3,6 +3,8 @@ A basic Python implementation for simulating and analyzing poker games, with sup
 
 Using Streamlit to easily input and compute probabilities interactively.
 
+You can use ngrok to host this on your personal laptop, and share a link with your friends so they can access it in real-time around the table.
+
 
 ### Features
 1. Texas Hold'em and Omaha poker variants
@@ -45,3 +47,7 @@ poetry run pytest
 ```
 poetry run black src tests --check
 ```
+
+
+To do:
+increase or decrease number of simulations
